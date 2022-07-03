@@ -1,0 +1,115 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="styles.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
+
+  <title>Processamento Imagens</title>
+</head>
+
+<body>
+  <h2 align="center">Processamento de Imagens (Operações Lógicas)</h2>
+  <hr>
+  <div class="content">
+    <div class="image1-content">
+      <h3 class="title-content">Imagem 1</h3>
+      <div>
+        <img id="imagem1" class="img" />
+      </div>
+
+      <div class="buttons">
+        <input type="file" id="primeiraImagem" accept=".png, .jpg, .jpeg"></input>
+      </div>
+    </div>
+
+    <div class="image2-content">
+      <h3 class="title-content">Imagem 2</h3>
+      <div>
+        <img id="imagem2" class="img" />
+      </div>
+
+      <div class="buttons">
+        <input type="file" id="segundaImagem" accept=".png, .jpg, .jpeg"></input>
+      </div>
+    </div>
+  </div>
+  <hr>
+  <div class="operations-content">
+    <div class="options-content-aritm"></div>
+    <div class="row">
+      <button class="btn btn-primary" style="margin-left: 40px" onclick="operation('add')">Adição</button>
+      <button class="btn btn-primary" style="margin-left: 15px" onclick="operation('subt')">Subtração</button>
+      <div>
+        <button class="btn btn-primary" style="margin-left: 15px" onclick="operation('mult')">Multiplicação</button>
+        <input class="input" type="number" name="" id="mult">
+      </div>
+      <div style="margin-left: -85px">
+        <button class="btn btn-primary" onclick="operation('div')">Divisão</button>
+        <input class="input" type="number" name="" id="div">
+      </div>
+      <div class="options-content-logic" style="margin-top: -1px">
+        <button class="btn btn-primary" onclick="operation('media')">Média</button>
+        <div style="margin-left: 15px">
+          <button class="btn btn-primary" onclick="operation('blend')">Blending</button>
+          <input class="input" type="number" name="" id="blend">
+        </div>
+        <button class="btn btn-primary" style="margin-left: -70px" onclick="operation('and')">AND</button>
+        <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('or')">OR</button>
+        <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('xor')">XOR</button>
+        <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('not2')">Primeiro NOT</button>
+        <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('not1')">Segundo NOT</button>
+      </div>
+      <div style="margin-top: 10px; margin-left: 25px">
+        <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('calcHistImg1Gray')">Histograma (IMAGEM 1 - ESCALA DE CINZAS [EQUALIZADA])</button>
+        <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('calcHistImg1RGB')">Histograma (IMAGEM 1 - RGB)</button>
+        <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('realImg1Min')">Realçe (IMAGEM 1 - MÍNIMO)</button>
+        <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('realImg1Max')">Realçe (IMAGEM 1 - MÁXIMO)</button>
+        <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('realImg1Media')">Realçe (IMAGEM 1 - MÉDIA)</button>
+        <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('realImg1Mediana')">Realçe (IMAGEM 1 - MEDIANA)</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="options-content-logic">
+    <button class="btn btn-success" style="margin-left: 25px;" onclick="sendImage()">Operar</button>
+  </div>
+  </div>
+
+  <div class="result-image-content">
+
+    <span class="title-hist1"></span>
+    <canvas height="100" width="300" id="grafico-histograma1"></canvas>
+
+    <span class="title-hist1Eq"></span>
+    <canvas height="100" width="300" id="grafico-histogramaEq"></canvas>
+
+    <span class="title-hist1R"></span>
+    <canvas height="100" width="300" id="grafico-histogramaR"></canvas>
+
+    <span class="title-hist1G"></span>
+    <canvas height="100" width="300" id="grafico-histogramaG"></canvas>
+
+    <span class="title-hist1B"></span>
+    <canvas height="100" width="300" id="grafico-histogramaB"></canvas>
+
+    <div class="result-content">
+      <span class="title-content">Imagem Resultante</span>
+      <div id="canvas-wrapper" style="width: 512px!important; height: 512px!important"></div>
+
+      <!-- <div class="buttons">
+        <button class="btn">Salvar Imagem</button>
+      </div> -->
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" charset="utf-8"></script>
+  <script src="scripts.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</body>
+
+</html>
