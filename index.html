@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
   <title>Processamento Imagens</title>
 </head>
@@ -72,6 +73,17 @@
         <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('realImg1Media')">Realçe (IMAGEM 1 - MÉDIA)</button>
         <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('realImg1Mediana')">Realçe (IMAGEM 1 - MEDIANA)</button>
       </div>
+      <div style="margin-top: 10px; margin-left: 25px" class="row">
+        <div>
+          <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('conservativeImg1Smoothing')">Conservation (IMAGEM 1)</button>
+          <input class="input" type="number" placeholder="Exemplo: 3" name="" id="filterSizeConservation">
+        </div>
+        <div style="margin-left: -65px">
+          <button class="btn btn-primary" style="margin-left: 15px;" onclick="operation('orderFilterImg1')">Ordenar (IMAGEM 1)</button>
+          <input class="input" type="number" name="" placeholder="Exemplo: 1" id="orderOrderFilter">
+          <input class="input" type="number" name="" placeholder="Exemplo: 3" id="filterSizeOrderFilter">
+        </div>
+      </div>
     </div>
   </div>
 
@@ -100,10 +112,6 @@
     <div class="result-content">
       <span class="title-content">Imagem Resultante</span>
       <div id="canvas-wrapper" style="width: 512px!important; height: 512px!important"></div>
-
-      <!-- <div class="buttons">
-        <button class="btn">Salvar Imagem</button>
-      </div> -->
     </div>
   </div>
 

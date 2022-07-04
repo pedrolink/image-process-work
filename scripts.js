@@ -4,6 +4,139 @@ var imageData1;
 var imageData2;
 var result;
 
+google.charts.load("current", { packages: ["corechart"] });
+
+function showResult(image) {
+  let outputResult = document.getElementById("canvas-wrapper");
+  imageCanva = document.createElement("img");
+  imageCanva.src = $(image).attr('src');
+  outputResult.append(imageCanva);
+}
+
+function matrixToImageData(matrix, width, height) {
+  const typedArray = new Uint8ClampedArray(matrix.length);
+  for (let i = 0; i < matrix.length - 4; i += 4) {
+    typedArray[i] = matrix[i];
+    typedArray[i + 1] = matrix[i + 1];
+    typedArray[i + 2] = matrix[i + 2];
+    typedArray[i + 3] = 255;
+  }
+
+  const imgData = new ImageData(typedArray, width, height);
+
+  return imgData;
+}
+
+function imageDataToImage(imagedata) {
+  let canvas = document.createElement('canvas');
+  let ctx = canvas.getContext('2d');
+  canvas.width = imagedata.width;
+  canvas.height = imagedata.height;
+  ctx.putImageData(imagedata, 0, 0);
+
+  let image = new Image();
+  image.src = canvas.toDataURL();
+
+  return image;
+}
+
+function matrixToImage(matrix, width, height) {
+  const imageData = matrixToImageData(matrix, width, height);
+  const image = imageDataToImage(imageData);
+
+  showResult(image);
+}
+
+function drawChart(values, title, divId) {
+  const data = google.visualization.arrayToDataTable([
+    ["Pixel Value", "Quantity"],
+    ...values
+  ]);
+
+  const options = {
+    title,
+    legend: { position: "none" },
+  };
+
+  const chart = new google.visualization.ColumnChart(
+    document.getElementById(divId)
+  );
+  chart.draw(data, options);
+}
+
+const resolveUnderflow = img =>
+  img.map(pixel => (pixel < 0 ? 0 : pixel));
+const resolveUnderflowUnit = pixel => pixel < 1 ? 1 : pixel;
+
+function getImageData(inputId, imgId) {
+  return new Promise((resolve, reject) => {
+    const input = document.getElementById(inputId);
+    const img = document.getElementById(imgId);
+    img.src = URL.createObjectURL(input.files[0]);
+    const imgObj = new Image();
+
+    setTimeout(() => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const context = canvas.getContext("2d");
+      context.drawImage(img, 0, 0);
+      const data = context.getImageData(0, 0, img.width, img.height);
+
+      return resolve({
+        imgData: data.data,
+        width: img.width,
+        height: img.height,
+      });
+    }, 200);
+  });
+}
+
+function getImageDataCanva(image) {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  
+  canvas.width = image.width;
+  canvas.height = image.height;
+
+  context.drawImage(image, 0, 0, image.width, image.height);
+
+  const imageDataObj = context.getImageData(0, 0, image.width, image.height);
+  
+  return imageDataObj;
+}
+
+const transformToDrawChart = (arr) => arr.map((item, idx) => [idx, item]);
+
+const flatten = arr => Array.isArray(arr[0]) ? flatten(arr.reduce((acc, curr) => acc = [...acc, ...curr], [])) : arr;
+const flattenV2 = arr => {
+  const result = [];
+  arr.forEach(line => line.forEach(pixelChunk => pixelChunk.forEach(pixelVal => result.push(pixelVal))));
+
+  return result;
+}
+
+function separateMatrixIntoLines(matrix, imgWidth) {
+  const result = [];
+  for (let i = 0; i < matrix.length; i += imgWidth * 4) {
+    result.push(matrix.slice(i, i + imgWidth * 4));
+  }
+
+  return result;
+}
+
+function separateChunkIntoPixels(matrix) {
+  return matrix.map(line => {
+    const newLine = [];
+    for (let i = 0; i < line.length; i += 4) {
+      const pixelChunk = [line[i], line[i + 1], line[i + 2], line[i + 3]];
+      newLine.push(pixelChunk);
+    }
+
+    return newLine;
+  });
+}
+
 // cria Canvas e pega os elementos para montar o preview IMG 1
 document.getElementById('primeiraImagem').onchange = function (evt) {
   var tgt = evt.target || window.event.srcElement,
@@ -92,6 +225,9 @@ var realImg1Min = false;
 var realImg1Max = false;
 var realImg1Media = false;
 var realImg1Mediana = false;
+var conservativeImg1Smoothing = false;
+var orderFilterImg1 = false;
+
 
 // operação que vem do front, variaveis criadas acima
 function operation(op) {
@@ -112,6 +248,8 @@ function operation(op) {
   op == 'realImg1Max' ? realImg1Max = true : realImg1Max = false;
   op == 'realImg1Media' ? realImg1Media = true : realImg1Media = false;
   op == 'realImg1Mediana' ? realImg1Mediana = true : realImg1Mediana = false;
+  op == 'conservativeImg1Smoothing' ? conservativeImg1Smoothing = true : conservativeImg1Smoothing = false;
+  op == 'orderFilterImg1' ? orderFilterImg1 = true : orderFilterImg1 = false;
 }
 
 // enviar imagem para calcular resultado
@@ -221,6 +359,29 @@ async function sendImage() {
   if (realImg1Mediana) {
     const realceImg = realceImg1(archive1, archive2, 'mediana');
     showImageResult(realceImg);
+  }
+
+  // se for conservação
+  if (conservativeImg1Smoothing) {
+    var archive = getImageDataCanva(document.getElementById('imagem1'))
+    var width = document.getElementById('imagem1').width;
+    var height = document.getElementById('imagem1').height;
+    console.log(document.getElementById('filterSizeConservation').value);
+    const realceImg = conservativeSmoothing(archive.data, width, document.getElementById('filterSizeConservation').value);
+    console.log(width);
+    console.log(height);
+    matrixToImage(realceImg, width, height)
+  }
+
+  // se for ordenação de filtro
+  if (orderFilterImg1) {
+    var archive = getImageDataCanva(document.getElementById('imagem1'))
+    var width = document.getElementById('imagem1').width;
+    var height = document.getElementById('imagem1').height;
+    const realceImg = orderFilter(archive.data, width, document.getElementById('orderOrderFilter').value, document.getElementById('filterSizeOrderFilter').value);
+    console.log(width);
+    console.log(height);
+    matrixToImage(realceImg, width, height)
   }
 }
 
@@ -369,6 +530,78 @@ function not2(firstMatriz, secondMatriz) {
   }
 
   return adjustOverFlow(result);
+}
+
+function conservativeSmoothing(matrix, width, filterSize) {
+  const lineSeparated = separateMatrixIntoLines(matrix, width);
+  const lineAndChunkSeparated = separateChunkIntoPixels(lineSeparated);
+  const kernelSize = (filterSize - 1) / 2;
+  const img2 = JSON.parse(JSON.stringify(lineAndChunkSeparated));
+
+  for (let i = kernelSize; i < lineAndChunkSeparated.length - kernelSize; i++) {
+    for (let j = kernelSize; j < lineAndChunkSeparated[i].length - kernelSize; j++) {
+      let maximumValue = [0, 0, 0, 0];
+      let minimumValue = [256, 256, 256, 256];
+
+      for (let l = i - kernelSize; l <= i + kernelSize; l++) {
+        for (let m = j - kernelSize; m <= j + kernelSize; m++) {
+          if (lineAndChunkSeparated[l] && lineAndChunkSeparated[l][m] && !(i === l && j === m)) {
+            lineAndChunkSeparated[l][m].forEach((pixelVal, idx) => {
+              if (maximumValue[idx] < pixelVal) {
+                maximumValue[idx] = pixelVal;
+              }
+
+              if (minimumValue[idx] > pixelVal) {
+                minimumValue[idx] = pixelVal;
+              }
+            });
+          }
+        }
+      }
+
+      lineAndChunkSeparated[i][j].forEach((pixelVal, idx) => {
+        if (pixelVal > maximumValue[idx]) {
+          img2[i][j][idx] = maximumValue[idx];
+        }
+
+        if (pixelVal < minimumValue[idx]) {
+          img2[i][j][idx] = minimumValue[idx];
+        }
+      });
+
+      img2[i][j][3] = 255;
+    }
+  }
+
+  return flattenV2(lineAndChunkSeparated);
+}
+
+function orderFilter(matrix, width, order, filterSize) {
+  const lineSeparated = separateMatrixIntoLines(matrix, width);
+  const lineAndChunkSeparated = separateChunkIntoPixels(lineSeparated);
+  const img2 = JSON.parse(JSON.stringify(lineAndChunkSeparated));
+  const kernelSize = (filterSize - 1) / 2;
+
+  for (let i = kernelSize; i < lineAndChunkSeparated.length - kernelSize; i++) {
+    for (let j = kernelSize; j < lineAndChunkSeparated[i].length - kernelSize; j++) {
+      let median = [[], [], [], []];
+      for (let l = i - kernelSize; l <= i + kernelSize; l++) {
+        for (let m = j - kernelSize; m <= j + kernelSize; m++) {
+          lineAndChunkSeparated[l][m].forEach((pixelVal, idx) => {
+            median[idx].push(pixelVal);
+          });
+        }
+      }
+
+      median.forEach(arr => arr.sort());
+      img2[i][j][0] = median[0][order];
+      img2[i][j][1] = median[1][order];
+      img2[i][j][2] = median[2][order];
+      img2[i][j][3] = 255;
+    }
+  }
+
+  return flattenV2(img2);
 }
 
 // calcular histograma da imagem 1 - RGB
